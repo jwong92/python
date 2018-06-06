@@ -19,3 +19,10 @@ class Choice(models.Model):
     votes = models.IntegerField(default=0)
     def __str__(self):
         return self.choice_text
+
+class Beer(models.Model):
+    name = models.CharField(max_length=200)
+    temperature = models.FloatField(default=0)
+    rec_date = models.DateTimeField('date recorded')
+    def __str__(self):
+        return '%s' % (self.name)

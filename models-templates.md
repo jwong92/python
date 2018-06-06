@@ -93,6 +93,14 @@ To include new app in project, add reference to configuration class in INSTALLED
 * Use the custom method
     * `>>> q = Question.objects.get(pk=1)`
     * `>>> q.was_published_recently()` - returns true/false
+* To get specific field names
+    * `fields = model._meta.get_fields()`
+    * `my_field = model._meta.get_field('my_field')`
+    * EX: `Question._meta.get_fields()`
+* Getting table values
+    * `m = Model.objects.all()` or `m = Model.objects.get(pk=1)`
+    * `m.values()` - will display all values for that object model
+    * `m.values('property_name')` - will display the value for that property
 
 #### Adding to our Choices model
 * We can give the question a couple of choices
@@ -178,15 +186,15 @@ urlpatterns = [
     url(r'^(?P<question_id>[0-9]+)/vote/$', views.vote, name='vote'),
 ]
 ```
-...Note that Django 2 has removed urls and now uses paths
+    Note that Django 2 has removed urls and now uses paths
 
 * When somone requests a page (ex. /mailingsystem/34), Django loads the mysite.urls python module, because it is pointed to by ROOT_URLCONF setting. It finds the variable named urlpatterns and traversis the regular expressions in order.
 
-...If it finds the match at __^mailingsystem/__, it will strip off the matching text (__mailingsystem/__) and set the remaining text __34/__ to the mailingsystem.urls URLconf for further processing
+    If it finds the match at __^mailingsystem/__, it will strip off the matching text (__mailingsystem/__) and set the remaining text __34/__ to the mailingsystem.urls URLconf for further processing
 
-...There, it matches `r'^(?P<question_id>[0-9]+)/$'` resulting in a call to the detail() view like `detail(request=<HttpRequest object>, question_id='34')`
+    There, it matches `r'^(?P<question_id>[0-9]+)/$'` resulting in a call to the detail() view like `detail(request=<HttpRequest object>, question_id='34')`
 
-...Breaking down `r'^(?P<question_id>[0-9]+)/$'`
+    Breaking down `r'^(?P<question_id>[0-9]+)/$'`
 * `question_id = '34'` - fromes from `(?P<question_id>[0-9]+)`
     * The parentesis capture the text matching the pattern and sends it as an argument to the view function
 * `?P<question_id>` - defines the name that will be used to identify the matched pattern
@@ -194,8 +202,8 @@ urlpatterns = [
 
 ## Writing Views that Do Something
 Each view does one of two things
-...Return an HTTPResponse object containing the content for the requested pag
-...Raising an exception such as Http404
+    Return an HTTPResponse object containing the content for the requested pag
+    Raising an exception such as Http404
 
 The view can read records from DB, use templates, generate a PDF, JSON, XML, or create zip file using whatever libraries required - as long as it has an HttpResponse or exception.
 
@@ -260,8 +268,8 @@ def index(request):
     context = {'latest_question_list': latest_question_list}
     return render(request, '[name_of_app]/index.html', context)
 ```
-...Note that if we use render, we no longer need to import loader and HttpResponse. Instead, you import render.
-...render() function takes the request object as first argument, a template name as it's second, and a dictionary (aka context) as an optional third. It returns an HttpResponse object of the giventemplate rendered with the given context.
+    Note that if we use render, we no longer need to import loader and HttpResponse. Instead, you import render.
+    render() function takes the request object as first argument, a template name as it's second, and a dictionary (aka context) as an optional third. It returns an HttpResponse object of the giventemplate rendered with the given context.
 
 ## Raising a 404 Error
 In the view, add the following
@@ -278,7 +286,7 @@ def detail(request, question_id):
         raise Http404("Question does not exist")
     return render(request, '[name_of_app]/detail.html', {'question': question})
 ```
-...The view raises the Http404 exception if a question with the requested ID doesn't exist.
+    The view raises the Http404 exception if a question with the requested ID doesn't exist.
 
 ### get_object_or_404() shortcut
 If the object doesn't exist, raise an Http404 error. Django provides a shorcut.
@@ -292,7 +300,7 @@ def detail(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     return render(request, 'polls/detail.html', {'question': question})
 ``` 
-...Note, we use shortcuts to decouple the model layer to the view layer.
+    Note, we use shortcuts to decouple the model layer to the view layer.
 * Can also use __get_list_or_404()__ function that uses __filter()__ instead of __get()__
 
 
@@ -306,13 +314,13 @@ def detail(request, question_id):
 {% endfor %}
 </ul>
 ```
-...Template system uses dot-lookup syntax to access variable attributes
+    Template system uses dot-lookup syntax to access variable attributes
 
-...`{{question.question_text}}` does a dictionary lookup on the object question (which was passed from the view that holds the request made to the Question class)
+    `{{question.question_text}}` does a dictionary lookup on the object question (which was passed from the view that holds the request made to the Question class)
 
-...If it doesn't find the object, it will look for an attribute which it finds in this case
+    If it doesn't find the object, it will look for an attribute which it finds in this case
 
-...method-calling occurs in the `{% for %}` loop. __question.choice_set.all__ is the same as __question.choice_set.all()__ method which returns an iterable Choice object and suitable for use
+    method-calling occurs in the `{% for %}` loop. __question.choice_set.all__ is the same as __question.choice_set.all()__ method which returns an iterable Choice object and suitable for use
 
 ## Remove hardcoded URLs in templates
 Defining the url() function in the [name_of_app].urls module, you can remove reliance on a specific URL path defined in the URL configuration using the {% url %} template tag
@@ -326,14 +334,14 @@ index.html
 <li><a href="{% url 'detail' question.id %}">{{ question.question_text }}</a></li>
 ```
 
-...The name value is called by `{% url %}`
-...`{% url 'detail' question.id %}` is what produces the link. The __'detail'__ is from the __name='detail'__ in the urls.py 
-...If you wanted to change the url of the details view, you can change it in the urls.py like:
+    The name value is called by `{% url %}`
+    `{% url 'detail' question.id %}` is what produces the link. The __'detail'__ is from the __name='detail'__ in the urls.py 
+    If you wanted to change the url of the details view, you can change it in the urls.py like:
 
 ```urls.py
 url(r'^specifics/(?P<question_id>[0-9]+)/$', views.detail, name='detail')
 ```
-...without changing the template url
+    without changing the template url
 
 ## Namespacing URL names
 If there were many different apps, you'd have to differentiate between the url names. To do so, add a namespace to the URLconf in each app file.
@@ -352,13 +360,214 @@ urlpatterns = [
 ]
 ```
 
-...Then update the view url to include the namespace
+    Then update the view url to include the namespace
 ```
 <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
 ```
 
 
+## Writing a Simple Form
 
+1. In your views, create a form that will display radio buttons for each question option
+```
+<h1>{{ question.question_text }}</h1>
+
+{% if error_message %}
+<p>
+    <strong>{{ error_message }}</strong>
+</p>{% endif %}
+
+<form action="{% url 'mailingsystem:vote' question.id %}" method="post">
+    {% csrf_token %} {% for choice in question.choice_set.all %}
+    <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" />
+    <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label>
+    <br /> {% endfor %}
+    <input type="submit" value="Vote" />
+</form>
+```
+* The __value__ of each radio button is the question choice id
+* The __name__ of each radio button is the choice
+* form __action__ goes to the mailingsystem namespace and vote page, along with the associated question id
+* The __forloop.counter__ indicates the number of times the for tag has gone through the loop
+* All post forms targeted at internal URL's should use the __{% csrf_token %}__ template tag for CORS
+
+2. The post url will go through the views.py __vote__ method, so alter it like so:
+
+```
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponseRedirect, HttpResponse
+from django.urls import reverse
+
+from .models import Choice, Question
+# ...
+def vote(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    try:
+        selected_choice = question.choice_set.get(pk=request.POST['choice'])
+    except (KeyError, Choice.DoesNotExist):
+        # Redisplay the question voting form.
+        return render(request, 'polls/detail.html', {
+            'question': question,
+            'error_message': "You didn't select a choice.",
+        })
+    else:
+        selected_choice.votes += 1
+        selected_choice.save()
+        # Always return an HttpResponseRedirect after successfully dealing
+        # with POST data. This prevents data from being posted twice if a
+        # user hits the Back button.
+        return HttpResponseRedirect(reverse('polls:results', args=(question.id)))
+```
+* Things to Note
+    * __request.POST__ is a dictionary like object that allows access to submitted data by key name. This particular code `request.POST['choice']` returns the ID of the selected choice as a string (they are always returned as strings)
+    * `request.POST['choice']` raises a KeyError if choice wasn't provided in POST data. We render an error message to the details page with an error message if one is raised.
+    * Django provides __request.GET__ as well
+    * After incrementing the choice count, code returns __HTTPResponseRedirect__ rather than __HttpResponse__. 
+        * __HTTPResponseRedirect__ takes one argument(the url)
+        * ALWAYS return HttpResponseRedirect after successfully dealing with POST data.
+    * Use __reverse()__ function to avoid hardcode URL in view function by giving name of view to pass control to and vairable portion of URL pattern that points to that view
+        * This particular reverse() call will return something like: ... ...`/mailingsystem/3/results`
+    * A request is an __HttpRequest__ <a name="note1"></a>: object
+
+3. After the post method goes through the vote method, it will return the results view
+```
+from django.shortcuts import get_object_or_404, render
+
+def results(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    return render(request, 'mailingsystem/results.html', {'question': question})
+```
+
+## Generic Views System
+* The __detail()__, __results()__ and __index()__ views are redundant, and can be replaced with a "generic views" system
+* To do so, follow the 3 steps:
+    1. Convert the URLconf
+    2. Delete old unneeded views
+    3. Introduce new views based on Django's generic views
+
+### Amend URLconf
+* Change the regular expressions and page names to the following
+
+```urls.py
+from django.conf.urls import url
+
+from . import views
+
+app_name = 'polls'
+urlpatterns = [
+    url(r'^$', views.IndexView.as_view(), name='index'),
+    url(r'^(?P<pk>[0-9]+)/$', views.DetailView.as_view(), name='detail'),
+    url(r'^(?P<pk>[0-9]+)/results/$', views.ResultsView.as_view(), name='results'),
+    url(r'^(?P<question_id>[0-9]+)/vote/$', views.vote, name='vote'),
+]
+```
+
+### Amend Views
+```
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.views import generic
+
+from .models import Choice, Question
+
+
+class IndexView(generic.ListView):
+    template_name = 'mailingsystem/index.html'
+    context_object_name = 'latest_question_list'
+
+    def get_queryset(self):
+        """Return the last five published questions."""
+        return Question.objects.order_by('-pub_date')[:5]
+
+
+class DetailView(generic.DetailView):
+    model = Question
+    template_name = 'mailingsystem/detail.html'
+
+
+class ResultsView(generic.DetailView):
+    model = Question
+    template_name = 'mailingsystem/results.html'
+
+
+def vote(request, question_id):
+    ... # same as above, no changes needed.
+```
+
+* __ListView__ and __DetailView__ are used here that display a list of objects and a detail page for a particular type of object.
+* Each generic view needs to know what model it will be acting upon and is provided with the model attribute.
+* By default, the generic DetailView uses a template called `<app name>/<model name>_detail.html`. This case, the template is `mailingsystem/question_detail.html`.
+* __template_name__ attribute is to give a specific name instead of an autogenerated one - ensures results and detail view are rendered differently even though they're both DetailView's behind the scenes. 
+
+
+## More on Models
+Each model should map to a single database table
+* Model is a Python class that subclasses __django.db.models.Model__
+* Each attribute of the model represents a database field
+
+
+### Using Models
+1. Once defined, edit __INSTALLED_APPS__ in project settings to add module name containing models.py
+2. Register the models in __admin.py__
+```
+# Register your models here.
+from .models import Question, Beer, Choice
+
+admin.site.register(Question)
+admin.site.register(Beer)
+admin.site.register(Choice)
+```
+* Migrate the models from here.
+
+### Fields
+Each field in model should be instance of appropriate Field class. Django uses field class types to determine
+* Column type (INTEGER, VARCHAR, TEXT)
+* Default HTML widget to use when rendering form (<input type="text">, <select>)
+
+#### Field Options
+All field types are optional
+* __null__ - if true Django will store empty values as null in database. Default is false.
+
+* __blank__ - if true, the field is allowed to be blank. Default is false. Different from null because null is purely database related, whereas blank is validation related. If a field has blank=True, form validation allows entry of empty value. Otherwise, field is required.
+* __choices__ - iterable list or tuple of 2-tuples to use as a choice for this field. If chose, default form widget is a select box instead of standard text field and limit choices to ones given
+```example
+YEAR_IN_SCHOOL_CHOICES = (
+    ('FR', 'Freshman'),
+    ('SO', 'Sophomore'),
+    ('JR', 'Junior'),
+    ('SR', 'Senior'),
+    ('GR', 'Graduate'),
+)
+```
+The first value in each tuple is value stored in database. Second is displayed by default from widget (or ModelChoiceField)
+    
+Given a model instance, display value for a choices field can be accessed using the __get_FOO_display()__ method.
+
+```in models.py
+from django.db import models
+
+class Person(models.Model):
+    SHIRT_SIZES = (
+        ('S', 'Small'),
+        ('M', 'Medium'),
+        ('L', 'Large'),
+    )
+    name = models.CharField(max_length=60)
+    shirt_size = models.CharField(max_length=1, choices=SHIRT_SIZES)
+```
+
+```in manage.py shell
+>>> p = Person(name="Fred Flintstone", shirt_size="L")
+>>> p.save()
+>>> p.shirt_size
+'L'
+>>> p.get_shirt_size_display()
+'Large'
+```
 <!-- Spitting out JSON data -->
 <!-- https://stackoverflow.com/questions/23110383/how-to-dynamically-build-a-json-object-with-python?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa -->
 <!-- https://www.google.ca/search?q=how+to+product+a+json+string+in+python&oq=how+to+product+a+json+string+in+python&aqs=chrome..69i57.7014j0j7&sourceid=chrome&ie=UTF-8 -->
+
+## References
+<sup>[1](#note1)</sup>

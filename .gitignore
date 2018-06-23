@@ -1,1 +1,6 @@
 berryface/berryface/settings.py
+berryface/berryface/__pycache__/*.pyc
+berryface/bf/__pycache__/*.pyc
+berryface/bf/migrations/
+*.py[cod]
+*.pyc

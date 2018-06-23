@@ -7,6 +7,7 @@ from django.shortcuts import render
 import requests
 import json
 import os
+from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.utils import timezone
 from django.core import serializers
@@ -57,6 +58,34 @@ def add_user(request):
 def view_token(request):
     token = User.objects.get_token(json.loads(open("bf/user.json").read()))
     return HttpResponse(token)
+
+
+# @csrf_exempt
+def view_token(request):
+    if request.method == "POST":
+    # token = User.objects.get_token(json.loads(open("berryface/user.json").read()))
+        # token = User.objects.get_token(request.POST)
+        # return HttpResponse(request.body)
+
+        # IF USING FORM ENCODED DATA, USE REQUEST.POST AND MAKE SURE THAT THE ENCTYPE IS FORM!
+        # json_obj = json.dumps(request.POST)
+
+        # BECUASE I AM PASSING A JSON STRING, I WILL RENDER THE BODY, THEN SERIALIZE THE JSON TO A DICT
+        json_str = request.body
+        json_dict = json.loads(json_str)
+        email = json_dict['user'][0]['email']
+        password = json_dict['user'][0]['password']
+
+        # CHECK THE CREDENTIALS
+        credentials = User.objects.check_cred_get_token(email, password)
+        print credentials
+        return HttpResponse(json.dumps(credentials))
+
+
+
+# Posting JSON in Python without Requests Library
+
+# https://gist.github.com/kennethreitz/1294570
 
 
 # https://docs.djangoproject.com/en/2.0/ref/models/instances/
